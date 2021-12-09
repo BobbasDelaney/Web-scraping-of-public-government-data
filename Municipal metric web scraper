@@ -1,0 +1,74 @@
+from bs4 import BeautifulSoup
+import requests
+import pandas as pd
+import re
+
+i=10
+tabs = ["demographic", "financial", "services"]
+mun = ["1236/rand-west-city-local-municipality","1064/mogale-city-local-municipality","1063/merafong-city-local-municipality","115/west-rand-district-municipality","1062/midvaal-local-municipality","1061/lesedi-local-municipality","1060/emfuleni-local-municipality","114/sedibeng-district-municipality","2/city-of-johannesburg-metropolitan-municipality","3/city-of-tshwane-metropolitan-municipality","4/city-of-ekurhuleni-metropolitan-municipality"]
+mun_1= ["rand-west-city-local-municipality", "mogale-city-local-municipality","merafong-city-local-municipality","west-rand-district-municipality","midvaal-local-municipality", "lesedi-local-municipality","emfuleni-local-municipality","sedibeng-district-municipality", "city-of-johannesburg-metropolitan-municipality", "city-of-tshwane-metropolitan-municipality", "city-of-ekurhuleni-metropolitan-municipality"]
+
+heading_1 =['Demographic information', '2016', '2011']
+heading_2 = ['Financial allocation points','2019/20', '2018/19', '2017/18', '2016/17','2015/16' ]
+heading_3 = ['Service Delivery Statistics','2018/19', '2017/18', '2016/17', '2015/16', '2014/15']
+
+headings = [heading_1, heading_2, heading_3]
+'''writer = pd.ExcelWriter('pandas_multiple.xlsx', engine='xlsxwriter')
+def toXl(s1):
+    s1.to_excel(writer, sheet_name=tabs[n])
+    
+    print(s1)'2015/16' '2015/16', '2014/15'
+    '''
+
+#writer = pd.ExcelWriter('pandas_multiple.xlsx', engine='xlsxwriter') 
+def getData(mun,tab):
+    
+    url = f"https://municipalities.co.za/{tab}/{mun}"
+    print(url)
+    html_content = requests.get(url).text
+    soup = BeautifulSoup(html_content, "lxml")
+    sds = soup.find_all("table", attrs={"class": "table"})
+    #print(sds)
+    table1 = sds[0] # important if i want more tables from one page (url)
+    body = table1.find_all("tr")
+    
+    all_rows = [] 
+    for row_num in range(len(body)): 
+        row = [] 
+        for row_item in body[row_num].find_all("td"): 
+            aa = re.sub("(\xa0)|(\n)|,","",row_item.text)
+        
+            row.append(aa)
+   
+        all_rows.append(row)
+    
+    if tabs[n] == 'demographic':
+        df1 = pd.DataFrame(data=all_rows,columns= heading_1)
+        #df1.to_excel(writer, sheet_name='Sheet_1')
+        #writer.save()
+        #print(df1)
+        #toXl(df1)
+        df1.to_csv(f'{mun_1[i]}'+f'{tab}.csv')
+    elif tabs[n] == 'financial':
+        df2 = pd.DataFrame(data=all_rows,columns= heading_2)
+        #df2.to_excel(writer, sheet_name='Sheet_2')
+       # writer.save()
+        #print(df2)
+        #toXl(df2)
+        df2.to_csv(f'{mun_1[i]}'+f'{tab}.csv')
+    else:
+        df3 = pd.DataFrame(data=all_rows,columns= heading_3)
+        #df3.to_excel(writer, sheet_name='Sheet_3')
+        #print(df3)
+        #toXl(df3)
+        df3.to_csv(f'{mun_1[i]}'+f'{tab}.csv')
+    
+       
+    #df3.to_excel(writer, sheet_name='Sheet_3')
+    #writer.save()    
+      
+print('demo')
+for n in range(3):
+       getData(mun[i],tabs[n]) 
+       print(getData)
+       #writer.save()
